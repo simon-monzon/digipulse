@@ -5,7 +5,7 @@ const app = express();
 const mongoose = require("mongoose");
 const morgan = require("morgan");
 const bodyParser = require("body-parser");
-const AuthRoute = require("./routes/auth");
+const AuthRoute = require("./routes/route");
 
 mongoose.connect(process.env.DATABASE_URL, {
   useNewUrlParser: true,

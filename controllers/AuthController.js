@@ -8,9 +8,10 @@ const register = (req, res, next) => {
       res.json({ error: err });
     }
     let user = new User({
-      username: req.body.userName,
+      username: req.body.username,
       email: req.body.email,
       password: hashedPass,
+      emailVerified: true,
     });
     user
       .save()
@@ -28,30 +29,32 @@ const register = (req, res, next) => {
 };
 
 const login = (req, res, next) => {
-  var username = req.body.userName;
+  var username = req.body.username;
   var password = req.body.password;
 
-  User.findOne({ username: username }).then((user) => {
-    if (user) {
-      bycrypt.compare(password, user.password, function (err, result) {
-        if (err) {
-          res.json({
-            error: err,
-          });
-        }
-        if (result) {
-          let token = jwt.sign({ name: user.name }, "verySecretValue", {
-            expiresIn: "1h",
-          });
-          res.json({ message: "Login Successful!", token });
-        } else {
-          res.json({ message: "Password does not matched!" });
-        }
-      });
-    } else {
-      res.json({ message: "No User Found!" });
+  User.findOne({ $or: [{ username: username }, { email: username }] }).then(
+    (user) => {
+      if (user) {
+        bycrypt.compare(password, user.password, function (err, result) {
+          if (err) {
+            res.json({
+              error: err,
+            });
+          }
+          if (result) {
+            let token = jwt.sign({ name: user.name }, "verySecretValue", {
+              expiresIn: "1h",
+            });
+            res.json({ message: "Login Successful!", token });
+          } else {
+            res.json({ message: "Password does not matched!" });
+          }
+        });
+      } else {
+        res.json({ message: "No User Found!" });
+      }
     }
-  });
+  );
 };
 
 module.exports = {
